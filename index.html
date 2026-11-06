@@ -1,0 +1,1257 @@
+ <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Khata</title>
+
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
+
+    <link rel="stylesheet" href="style.css?v=2">
+</head>
+
+<body>
+
+<section class="auth-screen" id="authScreen">
+    <div class="auth-card">
+        <div class="auth-brand-icon">
+            <i class="fa-solid fa-book-open"></i>
+        </div>
+        <h1 id="authTitle">Welcome back</h1>
+        <p class="auth-description">Sign in to open your Digital Khata on your devices.</p>
+        <form id="authForm" onsubmit="submitAuth(event)">
+            <label for="authUsername">Username</label>
+            <input id="authUsername" type="text" autocomplete="username" autocapitalize="none" spellcheck="false" required minlength="3" maxlength="32" pattern="[A-Za-z0-9._-]+" title="Use 3-32 letters, numbers, dots, underscores or hyphens.">
+
+            <label for="authPassword">Password</label>
+            <input id="authPassword" type="password" autocomplete="current-password" required minlength="8" maxlength="128">
+            <small class="auth-help">Password kam az kam 8 characters ka hona chahiye.</small>
+
+            <p class="auth-status" id="authStatus" role="status" aria-live="polite"></p>
+            <button class="primary-btn auth-submit" id="authSubmit" type="submit">Sign in</button>
+        </form>
+        <button class="auth-switch" id="authSwitch" type="button" onclick="toggleAuthMode()">
+            New here? Create an account
+        </button>
+        <button class="offline-btn" id="offlineButton" type="button" onclick="continueOffline()">
+            Continue offline on this device
+        </button>
+        <p class="offline-note">Mobile par bhi isi server ke address ko kholen aur isi username/password se login karein.</p>
+    </div>
+</section>
+
+<div class="app">
+
+    <!-- SIDEBAR -->
+    <aside class="sidebar" id="sidebar">
+
+        <div class="brand">
+            <div class="brand-icon">
+                <i class="fa-solid fa-book-open"></i>
+            </div>
+            <div>
+                <h2>Digital Khata</h2>
+                <span>Business Manager</span>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+
+            <button class="nav-item active" onclick="showPage('dashboard', this)">
+                <i class="fa-solid fa-chart-pie"></i>
+                <span>Dashboard</span>
+            </button>
+
+            <button class="nav-item" onclick="showPage('customers', this)">
+                <i class="fa-solid fa-users"></i>
+                <span>Customers</span>
+            </button>
+
+            <button class="nav-item" onclick="showPage('transactions', this)">
+                <i class="fa-solid fa-file-invoice-dollar"></i>
+                <span>Khata / Transactions</span>
+            </button>
+
+            <button class="nav-item" onclick="showPage('products', this)">
+                <i class="fa-solid fa-boxes-stacked"></i>
+                <span>Products & Stock</span>
+            </button>
+
+            <button class="nav-item" onclick="showPage('sales', this)">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span>Sales</span>
+            </button>
+
+            <button class="nav-item" onclick="showPage('reports', this)">
+                <i class="fa-solid fa-chart-column"></i>
+                <span>Reports</span>
+            </button>
+
+        </nav>
+
+        <div class="sidebar-bottom">
+            <button class="danger-outline" onclick="clearAllData()">
+                <i class="fa-solid fa-trash"></i>
+                Clear All Data
+            </button>
+            <p class="account-username" id="accountUsername"></p>
+            <button class="logout-btn" id="logoutButton" type="button" onclick="logout()">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                Log out
+            </button>
+        </div>
+
+    </aside>
+
+
+    <!-- MAIN -->
+    <main class="main">
+
+        <!-- TOPBAR -->
+        <header class="topbar">
+
+            <button class="mobile-menu" onclick="toggleSidebar()">
+                <i class="fa-solid fa-bars"></i>
+            </button>
+
+            <div>
+                <h1 id="pageTitle">Dashboard</h1>
+                <p id="pageSubtitle">Manage your business easily</p>
+            </div>
+
+            <div class="top-actions">
+                <span id="currentDate"></span>
+            </div>
+
+        </header>
+
+
+        <!-- ================= DASHBOARD ================= -->
+        <section class="page active" id="dashboard">
+
+            <div class="stats-grid dashboard-stats-grid">
+
+                <div class="stat-card">
+                    <div class="stat-icon customers">
+                        <i class="fa-solid fa-users"></i>
+                    </div>
+                    <div>
+                        <span>Total Customers</span>
+                        <strong id="dashCustomers">0</strong>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon lena">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </div>
+                    <div>
+                        <span>Total Lena</span>
+                        <strong id="dashLena">Rs. 0</strong>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon dena">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </div>
+                    <div>
+                        <span>Total Dena</span>
+                        <strong id="dashDena">Rs. 0</strong>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon products">
+                        <i class="fa-solid fa-box"></i>
+                    </div>
+                    <div>
+                        <span>Total Products</span>
+                        <strong id="dashProducts">0</strong>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon sales">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </div>
+                    <div>
+                        <span>Total Sales</span>
+                        <strong id="dashSales">Rs. 0</strong>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="dashboard-grid">
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Recent Transactions</h3>
+                            <p>Latest khata activity</p>
+                        </div>
+
+                        <button class="small-btn"
+                                onclick="showPageById('transactions')">
+                            View All
+                        </button>
+                    </div>
+
+                    <div class="table-wrap">
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Customer</th>
+                                <th>Type</th>
+                                <th>Amount</th>
+                            </tr>
+                            </thead>
+                            <tbody id="recentTransactions"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+
+                <div class="panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Low Stock</h3>
+                            <p>Products needing attention</p>
+                        </div>
+                    </div>
+
+                    <div id="lowStockList" class="low-stock-list"></div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= CUSTOMERS ================= -->
+        <section class="page" id="customers">
+
+            <div class="page-toolbar">
+
+                <div>
+                    <h2>Customers / Parties</h2>
+                    <p>Manage customer and party accounts</p>
+                </div>
+
+                <button class="primary-btn" onclick="openCustomerModal()">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Customer
+                </button>
+
+            </div>
+
+
+            <div class="search-box">
+                <i class="fa-solid fa-search"></i>
+                <input type="text"
+                       id="customerSearch"
+                       placeholder="Search customer..."
+                       oninput="renderCustomers()">
+            </div>
+
+
+            <div class="panel">
+                <div class="table-wrap">
+
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Customer</th>
+                            <th>Phone</th>
+                            <th>Lena</th>
+                            <th>Dena</th>
+                            <th>Balance</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="customersTable"></tbody>
+                    </table>
+
+                </div>
+            </div>
+
+        </section>
+
+
+        <!-- ================= TRANSACTIONS ================= -->
+        <section class="page" id="transactions">
+
+            <div class="page-toolbar">
+
+                <div>
+                    <h2>Khata / Transactions</h2>
+                    <p>Manage Lena and Dena entries</p>
+                </div>
+
+                <button class="primary-btn" onclick="openTransactionModal()">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Transaction
+                </button>
+
+            </div>
+
+
+            <div class="filters-row">
+
+                <div class="search-box">
+                    <i class="fa-solid fa-search"></i>
+                    <input type="text"
+                           id="transactionSearch"
+                           placeholder="Search transaction..."
+                           oninput="renderTransactions()">
+                </div>
+
+                <select id="transactionFilter"
+                        onchange="renderTransactions()">
+                    <option value="all">All</option>
+                    <option value="lena">Lena</option>
+                    <option value="dena">Dena</option>
+                </select>
+
+            </div>
+
+
+            <div class="panel">
+
+                <div class="table-wrap">
+
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Slip</th>
+                            <th>Date</th>
+                            <th>Customer</th>
+                            <th>Type</th>
+                            <th>Product / Details</th>
+                            <th>Amount</th>
+                            <th>Proof</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="transactionsTable"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ================= PRODUCTS ================= -->
+        <section class="page" id="products">
+
+            <div class="page-toolbar">
+
+                <div>
+                    <h2>Products & Stock</h2>
+                    <p>Manage products, pictures and stock</p>
+                </div>
+
+                <button class="primary-btn" onclick="openProductModal()">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Product
+                </button>
+
+            </div>
+
+
+            <div class="search-box">
+                <i class="fa-solid fa-search"></i>
+                <input type="text"
+                       id="productSearch"
+                       placeholder="Search product..."
+                       oninput="renderProducts()">
+            </div>
+
+
+            <div class="panel">
+
+                <div class="table-wrap">
+
+                    <table>
+                        <thead>
+                        <tr>
+                            <th>Picture</th>
+                            <th>Product</th>
+                            <th>Category</th>
+                            <th>Purchase</th>
+                            <th>Sale</th>
+                            <th>Stock</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+
+                        <tbody id="productsTable"></tbody>
+
+                    </table>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+    
+<!-- ================= SALES ================= -->
+<section class="page" id="sales">
+
+    <div class="page-toolbar">
+
+        <div>
+            <h2>Sales</h2>
+            <p>Create sales and generate receipts</p>
+        </div>
+
+        <button class="primary-btn" onclick="openSaleModal()">
+            <i class="fa-solid fa-plus"></i>
+            New Sale
+        </button>
+
+    </div>
+
+    <div class="panel">
+
+        <div class="table-wrap">
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Invoice</th>
+                        <th>Date</th>
+                        <th>Customer</th>
+                        <th>Total</th>
+                        <th>Paid</th>
+                        <th>Remaining</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+
+                <tbody id="salesTable"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+        <!-- ================= REPORTS ================= -->
+        <section class="page" id="reports">
+
+            <div class="page-toolbar">
+
+                <div>
+                    <h2>Reports</h2>
+                    <p>Business summary</p>
+                </div>
+
+            </div>
+
+            <div class="panel report-filters">
+                <div class="report-filter-field">
+                    <label for="reportFromDate">From date</label>
+                    <input type="date" id="reportFromDate" onchange="renderReports()">
+                </div>
+                <div class="report-filter-field">
+                    <label for="reportToDate">To date</label>
+                    <input type="date" id="reportToDate" onchange="renderReports()">
+                </div>
+                <button class="secondary-btn" type="button" onclick="resetReportDates()">
+                    <i class="fa-solid fa-rotate-left"></i>
+                    All Dates
+                </button>
+                <p id="reportPeriodMessage" class="report-period-message">
+                    Showing all available records
+                </p>
+            </div>
+
+            <div class="stats-grid report-stats-grid">
+
+                <div class="stat-card">
+                    <div class="stat-icon lena">
+                        <i class="fa-solid fa-arrow-down"></i>
+                    </div>
+                    <div>
+                        <span>Lena (Receivable)</span>
+                        <strong id="reportLena">Rs. 0</strong>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon dena">
+                        <i class="fa-solid fa-arrow-up"></i>
+                    </div>
+                    <div>
+                        <span>Dena (Payable)</span>
+                        <strong id="reportDena">Rs. 0</strong>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon products">
+                        <i class="fa-solid fa-cart-shopping"></i>
+                    </div>
+                    <div>
+                        <span>Total Sales</span>
+                        <strong id="reportSales">Rs. 0</strong>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon sales">
+                        <i class="fa-solid fa-money-bill-wave"></i>
+                    </div>
+                    <div>
+                        <span>Sales Collected</span>
+                        <strong id="reportCollected">Rs. 0</strong>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon dena">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div>
+                        <span>Sales Remaining</span>
+                        <strong id="reportRemaining">Rs. 0</strong>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon customers">
+                        <i class="fa-solid fa-boxes-stacked"></i>
+                    </div>
+                    <div>
+                        <span>Stock Units</span>
+                        <strong id="reportStock">0</strong>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon products">
+                        <i class="fa-solid fa-coins"></i>
+                    </div>
+                    <div>
+                        <span>Stock Value (Cost)</span>
+                        <strong id="reportStockValue">Rs. 0</strong>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="report-tables">
+                <div class="panel report-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Sales Details</h3>
+                            <p id="reportSalesCount">0 invoices</p>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="report-table sales-report-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Invoice</th>
+                                    <th>Customer</th>
+                                    <th>Total</th>
+                                    <th>Paid</th>
+                                    <th>Remaining</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportSalesTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel report-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Khata Transactions</h3>
+                            <p id="reportTransactionCount">0 entries</p>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="report-table transaction-report-table">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Customer</th>
+                                    <th>Type</th>
+                                    <th>Details</th>
+                                    <th>Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportTransactionsTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="panel report-panel">
+                    <div class="panel-header">
+                        <div>
+                            <h3>Inventory & Stock Value</h3>
+                            <p id="reportProductCount">0 products</p>
+                        </div>
+                    </div>
+                    <div class="table-wrap">
+                        <table class="report-table stock-report-table">
+                            <thead>
+                                <tr>
+                                    <th>Product</th>
+                                    <th>Category</th>
+                                    <th>In Stock</th>
+                                    <th>Cost / Unit</th>
+                                    <th>Stock Value</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reportStockTable"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+
+<!-- ================= CUSTOMER MODAL ================= -->
+<div class="modal" id="customerModal">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+            <div>
+                <h3>Add Customer</h3>
+                <p>Customer / party information</p>
+            </div>
+
+            <button class="close-btn" onclick="closeModal('customerModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+
+        <form id="customerForm">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Customer Name *</label>
+                    <input type="text" id="customerName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Phone / WhatsApp</label>
+                    <input type="text" id="customerPhone"
+                           placeholder="03001234567">
+                </div>
+
+                <div class="form-group full">
+                    <label>Address</label>
+                    <input type="text" id="customerAddress">
+                </div>
+
+                <div class="form-group full">
+                    <label>Notes</label>
+                    <textarea id="customerNotes"></textarea>
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+                <button type="button"
+                        class="secondary-btn"
+                        onclick="closeModal('customerModal')">
+                    Cancel
+                </button>
+
+                <button type="submit" class="primary-btn">
+                    Save Customer
+                </button>
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ================= TRANSACTION MODAL ================= -->
+<div class="modal" id="transactionModal">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+            <div>
+                <h3>Add Khata Transaction</h3>
+                <p>Lena or Dena entry</p>
+            </div>
+
+            <button class="close-btn"
+                    onclick="closeModal('transactionModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+
+        <form id="transactionForm">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Customer *</label>
+                    <select id="transactionCustomer" required></select>
+                </div>
+
+                <div class="form-group">
+                    <label>Type *</label>
+                    <select id="transactionType" required>
+                        <option value="lena">Lena - Paisay Lene Hain</option>
+                        <option value="dena">Dena - Paisay Dene Hain</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Amount *</label>
+                    <input type="number"
+                           id="transactionAmount"
+                           min="0"
+                           step="0.01"
+                           required>
+                </div>
+
+                <div class="form-group">
+                    <label>Date *</label>
+                    <input type="date"
+                           id="transactionDate"
+                           required>
+                </div>
+
+                <div class="form-group full">
+                    <label>Product / Details</label>
+                    <input type="text"
+                           id="transactionProduct"
+                           placeholder="Product name or transaction details">
+                </div>
+
+                <div class="form-group full">
+                    <label>Note</label>
+                    <textarea id="transactionNote"
+                              placeholder="Additional note"></textarea>
+                </div>
+
+                <div class="form-group full">
+                    <label>Screenshot / Payment Proof</label>
+
+                    <input type="file"
+                           id="transactionScreenshot"
+                           accept="image/*">
+
+                    <div id="transactionScreenshotPreview"
+                         class="image-preview"></div>
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="secondary-btn"
+                        onclick="closeModal('transactionModal')">
+                    Cancel
+                </button>
+
+                <button type="submit" class="primary-btn">
+                    Save Transaction
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ================= PRODUCT MODAL ================= -->
+<div class="modal" id="productModal">
+
+    <div class="modal-box">
+
+        <div class="modal-header">
+            <div>
+                <h3>Add Product</h3>
+                <p>Product and stock information</p>
+            </div>
+
+            <button class="close-btn"
+                    onclick="closeModal('productModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+
+        <form id="productForm">
+
+            <div class="form-grid">
+
+                <div class="form-group">
+                    <label>Product Name *</label>
+                    <input type="text" id="productName" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Category</label>
+                    <input type="text" id="productCategory">
+                </div>
+
+                <div class="form-group">
+                    <label>Purchase Price</label>
+                    <input type="number"
+                           id="purchasePrice"
+                           min="0"
+                           step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label>Sale Price</label>
+                    <input type="number"
+                           id="salePrice"
+                           min="0"
+                           step="0.01">
+                </div>
+
+                <div class="form-group">
+                    <label>Opening Stock</label>
+                    <input type="number"
+                           id="openingStock"
+                           min="0"
+                           step="1">
+                </div>
+
+                <div class="form-group">
+                    <label>Minimum Stock Alert</label>
+                    <input type="number"
+                           id="minStock"
+                           min="0"
+                           step="1"
+                           value="5">
+                </div>
+
+                <div class="form-group full">
+
+                    <label>Product Picture</label>
+
+                    <input type="file"
+                           id="productImage"
+                           accept="image/*">
+
+                    <div id="productImagePreview"
+                         class="image-preview"></div>
+
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="secondary-btn"
+                        onclick="closeModal('productModal')">
+                    Cancel
+                </button>
+
+                <button type="submit" class="primary-btn">
+                    Save Product
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ================= STOCK MODAL ================= -->
+<div class="modal" id="stockModal">
+
+    <div class="modal-box small-modal">
+
+        <div class="modal-header">
+            <div>
+                <h3>Update Stock</h3>
+                <p id="stockProductName"></p>
+            </div>
+
+            <button class="close-btn"
+                    onclick="closeModal('stockModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+
+
+        <form id="stockForm">
+
+            <input type="hidden" id="stockProductId">
+
+            <div class="form-group">
+                <label>Stock Action</label>
+
+                <select id="stockAction">
+                    <option value="in">Stock In</option>
+                    <option value="out">Stock Out</option>
+                </select>
+            </div>
+
+
+            <div class="form-group">
+                <label>Quantity</label>
+
+                <input type="number"
+                       id="stockQuantity"
+                       min="1"
+                       required>
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="secondary-btn"
+                        onclick="closeModal('stockModal')">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="primary-btn">
+                    Update Stock
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ================= SALE MODAL ================= -->
+<div class="modal" id="saleModal">
+
+    <div class="modal-box large-modal">
+
+        <div class="modal-header">
+
+            <div>
+                <h3>New Sale</h3>
+                <p>Create sale invoice</p>
+            </div>
+
+            <button class="close-btn"
+                    onclick="closeModal('saleModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <form id="saleForm">
+
+            <div class="form-group">
+                <label>Customer</label>
+                <select id="saleCustomer"></select>
+            </div>
+
+
+            <div class="sale-items-head">
+                <strong>Products</strong>
+
+                <button type="button"
+                        class="small-btn"
+                        onclick="addSaleItem()">
+                    <i class="fa-solid fa-plus"></i>
+                    Add Product
+                </button>
+            </div>
+
+
+            <div id="saleItems"></div>
+
+
+            <div class="sale-summary">
+
+                <div>
+                    <span>Total</span>
+                    <strong id="saleTotal">Rs. 0</strong>
+                </div>
+
+                <div>
+                    <label>Paid</label>
+                    <input type="number"
+                           id="salePaid"
+                           value="0"
+                           min="0"
+                           step="0.01"
+                           oninput="calculateSaleTotal()">
+                </div>
+
+                <div>
+                    <span>Remaining</span>
+                    <strong id="saleRemaining">Rs. 0</strong>
+                </div>
+
+            </div>
+
+
+            <div class="modal-footer">
+
+                <button type="button"
+                        class="secondary-btn"
+                        onclick="closeModal('saleModal')">
+                    Cancel
+                </button>
+
+                <button type="submit"
+                        class="primary-btn">
+                    <i class="fa-solid fa-check"></i>
+                    Complete Sale
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</div>
+
+
+<!-- ================= KHATA DETAIL MODAL ================= -->
+<div class="modal" id="khataModal">
+
+    <div class="modal-box extra-large-modal">
+
+        <div class="modal-header">
+
+            <div>
+                <h3 id="khataCustomerName">Customer Khata</h3>
+                <p id="khataCustomerPhone"></p>
+            </div>
+
+            <button class="close-btn"
+                    onclick="closeModal('khataModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <div class="khata-summary">
+
+            <div>
+                <span>Total Lena</span>
+                <strong id="khataLena">Rs. 0</strong>
+            </div>
+
+            <div>
+                <span>Total Dena</span>
+                <strong id="khataDena">Rs. 0</strong>
+            </div>
+
+            <div>
+                <span>Balance</span>
+                <strong id="khataBalance">Rs. 0</strong>
+            </div>
+
+        </div>
+
+
+        <div class="khata-actions">
+            <button class="whatsapp-btn"
+                    id="khataWhatsAppBtn">
+                <i class="fa-brands fa-whatsapp"></i>
+                WhatsApp Khata
+            </button>
+        </div>
+
+
+        <div class="table-wrap">
+
+            <table>
+
+                <thead>
+                <tr>
+                    <th>Slip</th>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Details</th>
+                    <th>Amount</th>
+                    <th>Proof</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+
+                <tbody id="khataTransactions"></tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= RECEIPT MODAL ================= -->
+<div class="modal" id="receiptModal">
+
+    <div class="modal-box receipt-modal">
+
+        <div class="modal-header no-print">
+
+            <div>
+                <h3>Transaction Slip</h3>
+                <p>Lena / Dena Receipt</p>
+            </div>
+
+            <button class="close-btn"
+                    onclick="closeModal('receiptModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <div id="receiptContent"></div>
+
+
+        <div class="receipt-buttons no-print">
+
+            <button class="primary-btn"
+                    onclick="printCurrentSlip()">
+                <i class="fa-solid fa-print"></i>
+                Print Slip
+            </button>
+
+            <button class="whatsapp-btn"
+                    onclick="whatsappCurrentSlip()">
+                <i class="fa-brands fa-whatsapp"></i>
+                WhatsApp Slip
+            </button>
+
+            <button class="secondary-btn"
+                    onclick="closeModal('receiptModal')">
+                Close
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= SALE RECEIPT MODAL ================= -->
+<div class="modal" id="saleReceiptModal">
+
+    <div class="modal-box receipt-modal">
+
+        <div class="modal-header no-print">
+
+            <div>
+                <h3>Sale Invoice</h3>
+                <p>Customer sale receipt</p>
+            </div>
+
+            <button class="close-btn"
+                    onclick="closeModal('saleReceiptModal')">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+        </div>
+
+
+        <div id="saleReceiptContent"></div>
+
+
+        <div class="receipt-buttons no-print">
+
+            <button class="primary-btn"
+                    onclick="printCurrentSaleReceipt()">
+                <i class="fa-solid fa-print"></i>
+                Print Receipt
+            </button>
+
+            <button class="whatsapp-btn"
+                    onclick="whatsappCurrentSaleReceipt()">
+                <i class="fa-brands fa-whatsapp"></i>
+                WhatsApp
+            </button>
+
+            <button class="secondary-btn"
+                    onclick="closeModal('saleReceiptModal')">
+                Close
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ================= IMAGE VIEWER ================= -->
+<div class="modal image-modal" id="imageViewerModal">
+
+    <div class="image-viewer">
+
+        <button class="image-close"
+                onclick="closeModal('imageViewerModal')">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+
+        <img id="viewerImage" src="" alt="Preview">
+
+    </div>
+
+</div>
+
+
+<!-- TOAST -->
+<div id="toast" class="toast"></div>
+
+
+<script src="script.js?v=2"></script>
+
+</body>
+</html>

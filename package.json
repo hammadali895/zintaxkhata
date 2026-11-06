@@ -1,0 +1,15 @@
+{
+  "name": "digital-khata",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Local SQLite backend for Digital Khata",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.57.0"
+  },
+  "engines": {
+    "node": ">=22.5.0"
+  }
+}
