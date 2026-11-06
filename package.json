@@ -2,9 +2,9 @@
   "name": "digital-khata",
   "version": "1.0.0",
   "private": true,
-  "description": "Local SQLite backend for Digital Khata",
+  "description": "Digital Khata local SQLite backend and Vercel deployment",
   "scripts": {
-    "start": "node server.js"
+    "start": "node local-server.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.57.0"
