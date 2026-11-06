@@ -1250,6 +1250,60 @@ form {
     color: var(--red);
 }
 
+.business-settings {
+    max-width: 760px;
+    padding: 22px;
+}
+
+.settings-help {
+    display: block;
+    margin-top: 6px;
+    color: var(--muted);
+    font-size: 12px;
+    line-height: 1.45;
+}
+
+.business-logo-preview {
+    display: grid;
+    width: 150px;
+    height: 120px;
+    margin-top: 12px;
+    place-items: center;
+    overflow: hidden;
+    border: 1px dashed var(--border);
+    border-radius: 10px;
+    background: #f8fafc;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.business-logo-preview img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+.settings-remove-logo {
+    margin-top: 10px;
+}
+
+.settings-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 20px;
+}
+
+.settings-status {
+    min-height: 18px;
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+.settings-status:empty {
+    display: none;
+}
+
 .report-stats-grid {
     grid-template-columns: repeat(4, minmax(0, 1fr));
 }

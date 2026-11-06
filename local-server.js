@@ -5,6 +5,7 @@ const path = require("node:path");
 const fs = require("node:fs");
 const { DatabaseSync } = require("node:sqlite");
 const { promisify } = require("node:util");
+const { validateSettingsRecords } = require("./settings-validation");
 
 const scrypt = promisify(crypto.scrypt);
 const PORT = Number(process.env.PORT || 3000);
@@ -14,7 +15,7 @@ const DATABASE_PATH = path.resolve(
 );
 const MAX_BODY_BYTES = 25 * 1024 * 1024;
 const SESSION_DURATION_SECONDS = 7 * 24 * 60 * 60;
-const COLLECTIONS = ["customers", "transactions", "products", "sales"];
+const COLLECTIONS = ["customers", "transactions", "products", "sales", "settings"];
 const STATIC_FILES = {
     "/": ["index.html", "text/html; charset=utf-8"],
     "/index.html": ["index.html", "text/html; charset=utf-8"],
@@ -275,6 +276,9 @@ async function handleApi(request, response, url) {
         if (!body || !COLLECTIONS.includes(body.collection) ||
             !Array.isArray(body.records)) {
             throw apiError(400, "The data collection is invalid.");
+        }
+        if (body.collection === "settings") {
+            validateSettingsRecords(body.records);
         }
         database.prepare(`
             INSERT INTO khata_data (user_id, collection, records)

@@ -10,22 +10,23 @@ const STORAGE = {
     customers: "khata_customers",
     transactions: "khata_transactions",
     products: "khata_products",
-    sales: "khata_sales"
+    sales: "khata_sales",
+    settings: "khata_settings"
 };
 
 const OFFLINE_STORAGE = {
     customers: "khata_offline_customers",
     transactions: "khata_offline_transactions",
     products: "khata_offline_products",
-    sales: "khata_offline_sales"
+    sales: "khata_offline_sales",
+    settings: "khata_offline_settings"
 };
 
-const BUSINESS_NAME = "Cottage House";
-const OWNER_NAME = "Hammad Ali";
-const BUSINESS_LOGO_URL = new URL(
-    "assets/cottage-house-logo.jpeg",
-    document.currentScript.src
-).href;
+const DEFAULT_BUSINESS_SETTINGS = {
+    businessName: "Cottage House",
+    ownerName: "Hammad Ali",
+    logoDataUrl: ""
+};
 const API_ENDPOINT = "/api";
 
 let isAuthenticated = false;
@@ -41,6 +42,8 @@ let customers = loadData(OFFLINE_STORAGE.customers);
 let transactions = loadData(OFFLINE_STORAGE.transactions);
 let products = loadData(OFFLINE_STORAGE.products);
 let sales = loadData(OFFLINE_STORAGE.sales);
+let businessSettings = { ...DEFAULT_BUSINESS_SETTINGS };
+let pendingBusinessLogo = null;
 
 let saleItems = [];
 
@@ -140,10 +143,14 @@ function clearLocalKhataData() {
     transactions = [];
     products = [];
     sales = [];
+    businessSettings = { ...DEFAULT_BUSINESS_SETTINGS };
 }
 
 function applyAccountData(data) {
     for (const collection of Object.keys(STORAGE)) {
+        if (collection === "settings" && data?.[collection] === undefined) {
+            continue;
+        }
         if (!Array.isArray(data?.[collection])) {
             throw new Error("The server returned invalid account data.");
         }
@@ -153,6 +160,7 @@ function applyAccountData(data) {
     transactions = data.transactions;
     products = data.products;
     sales = data.sales;
+    businessSettings = normalizeBusinessSettings(data.settings?.[0]);
 }
 
 function showAuthScreen(message = "") {
@@ -175,6 +183,7 @@ function finishSignIn(payload) {
     document.getElementById("authPassword").value = "";
     document.getElementById("authStatus").textContent = "";
     document.body.classList.add("authenticated");
+    renderBusinessSettings();
     updateDate();
     refreshAll();
     document.getElementById("transactionDate").value = todayISO();
@@ -189,9 +198,13 @@ function continueOffline() {
     transactions = loadData(OFFLINE_STORAGE.transactions);
     products = loadData(OFFLINE_STORAGE.products);
     sales = loadData(OFFLINE_STORAGE.sales);
+    businessSettings = normalizeBusinessSettings(
+        loadData(OFFLINE_STORAGE.settings)[0]
+    );
     document.getElementById("accountUsername").textContent =
         "Offline mode • this device only";
     document.body.classList.add("authenticated");
+    renderBusinessSettings();
     updateDate();
     refreshAll();
     document.getElementById("transactionDate").value = todayISO();
@@ -417,6 +430,155 @@ function readAndResizeImage(file, maxWidth = 800, maxHeight = 800, quality = 0.7
     });
 }
 
+function normalizeBusinessSettings(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return { ...DEFAULT_BUSINESS_SETTINGS };
+    }
+
+    const businessName = typeof value.businessName === "string"
+        ? value.businessName.trim().slice(0, 80)
+        : "";
+    const ownerName = typeof value.ownerName === "string"
+        ? value.ownerName.trim().slice(0, 80)
+        : "";
+    const logoDataUrl = typeof value.logoDataUrl === "string" &&
+        value.logoDataUrl.length <= 450000 &&
+        /^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(value.logoDataUrl)
+        ? value.logoDataUrl
+        : "";
+
+    return {
+        businessName: businessName || DEFAULT_BUSINESS_SETTINGS.businessName,
+        ownerName,
+        logoDataUrl
+    };
+}
+
+function renderBusinessSettings() {
+    const nameInput = document.getElementById("businessNameInput");
+    if (!nameInput) return;
+
+    document.getElementById("businessNameInput").value =
+        businessSettings.businessName;
+    document.getElementById("businessOwnerInput").value =
+        businessSettings.ownerName;
+    pendingBusinessLogo = null;
+    renderBusinessLogoPreview(businessSettings.logoDataUrl);
+    document.getElementById("businessSettingsStatus").textContent = "";
+    document.getElementById("businessLogoInput").value = "";
+}
+
+function renderBusinessLogoPreview(source) {
+    const preview = document.getElementById("businessLogoPreview");
+    const removeButton = document.getElementById("removeBusinessLogoButton");
+    if (!preview || !removeButton) return;
+
+    preview.replaceChildren();
+    if (source) {
+        const image = document.createElement("img");
+        image.src = source;
+        image.alt = "Receipt logo preview";
+        preview.appendChild(image);
+        removeButton.hidden = false;
+        return;
+    }
+
+    const emptyState = document.createElement("span");
+    emptyState.textContent = "No logo selected";
+    preview.appendChild(emptyState);
+    removeButton.hidden = true;
+}
+
+async function previewBusinessLogo(event) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    const status = document.getElementById("businessSettingsStatus");
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+        event.target.value = "";
+        status.textContent = "Please choose a JPG, PNG, or WebP image.";
+        return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        event.target.value = "";
+        status.textContent = "Logo image must be 5 MB or smaller.";
+        return;
+    }
+
+    status.textContent = "Optimizing logo...";
+    try {
+        const optimized = await readAndResizeImage(file, 500, 500, 0.72);
+        if (optimized.length > 450000) {
+            throw new Error("This logo could not be compressed enough. Please choose a smaller image.");
+        }
+        pendingBusinessLogo = optimized;
+        renderBusinessLogoPreview(optimized);
+        status.textContent = "";
+    } catch (error) {
+        event.target.value = "";
+        status.textContent = error.message || "Could not read the selected logo.";
+    }
+}
+
+function removeBusinessLogo() {
+    pendingBusinessLogo = "";
+    document.getElementById("businessLogoInput").value = "";
+    renderBusinessLogoPreview("");
+}
+
+async function saveBusinessSettings(event) {
+    event.preventDefault();
+    const status = document.getElementById("businessSettingsStatus");
+    const button = document.getElementById("saveBusinessSettingsButton");
+    const nextSettings = {
+        businessName: document.getElementById("businessNameInput").value.trim(),
+        ownerName: document.getElementById("businessOwnerInput").value.trim(),
+        logoDataUrl: pendingBusinessLogo === null
+            ? businessSettings.logoDataUrl
+            : pendingBusinessLogo
+    };
+
+    if (!nextSettings.businessName) {
+        status.textContent = "Business name is required.";
+        return;
+    }
+
+    button.disabled = true;
+    status.textContent = "Saving settings...";
+    try {
+        if (localOnlyMode) {
+            localStorage.setItem(
+                OFFLINE_STORAGE.settings,
+                JSON.stringify([nextSettings])
+            );
+        } else {
+            if (!apiReady || !isAuthenticated) {
+                throw new Error("Please sign in again before saving settings.");
+            }
+            await syncQueue;
+            await apiRequest("data", {
+                method: "POST",
+                body: { collection: "settings", records: [nextSettings] }
+            });
+        }
+
+        businessSettings = normalizeBusinessSettings(nextSettings);
+        pendingBusinessLogo = null;
+        renderBusinessSettings();
+        status.textContent = "Settings saved. They will appear on new receipts.";
+    } catch (error) {
+        status.textContent = error.message || "Could not save receipt settings.";
+    } finally {
+        button.disabled = false;
+    }
+}
+
+function getReceiptLogoMarkup() {
+    if (!businessSettings.logoDataUrl) return "";
+    return `<img class="receipt-logo" src="${businessSettings.logoDataUrl}"
+                 alt="${escapeHTML(businessSettings.businessName)} logo">`;
+}
+
 
 /* ================= TOAST ================= */
 
@@ -466,7 +628,8 @@ function showPage(pageId, button = null) {
         transactions: ["Khata / Transactions", "Manage Lena and Dena entries"],
         products: ["Products & Stock", "Manage products and stock"],
         sales: ["Sales", "Create sales and generate receipts"],
-        reports: ["Reports", "Business summary"]
+        reports: ["Reports", "Business summary"],
+        settings: ["Settings", "Customize your business receipts"]
     };
 
     if (titles[pageId]) {
@@ -1366,19 +1529,17 @@ function openTransactionSlip(id) {
 
             <div class="receipt-business">
 
-                <img class="receipt-logo"
-                     src="${BUSINESS_LOGO_URL}"
-                     alt="${escapeHTML(BUSINESS_NAME)} logo">
+                ${getReceiptLogoMarkup()}
 
-                <h2>${escapeHTML(BUSINESS_NAME)}</h2>
+                <h2>${escapeHTML(businessSettings.businessName)}</h2>
 
                 <p>
                     Business Transaction Slip
                 </p>
 
-                <p>
-                    Owner: ${escapeHTML(OWNER_NAME)}
-                </p>
+                ${businessSettings.ownerName
+                    ? `<p>Owner: ${escapeHTML(businessSettings.ownerName)}</p>`
+                    : ""}
 
             </div>
 
@@ -2736,19 +2897,17 @@ function openSaleReceipt(id) {
 
             <div class="receipt-business">
 
-                <img class="receipt-logo"
-                     src="${BUSINESS_LOGO_URL}"
-                     alt="${escapeHTML(BUSINESS_NAME)} logo">
+                ${getReceiptLogoMarkup()}
 
-                <h2>${escapeHTML(BUSINESS_NAME)}</h2>
+                <h2>${escapeHTML(businessSettings.businessName)}</h2>
 
                 <p>
                     Sales Invoice
                 </p>
 
-                <p>
-                    Owner: ${escapeHTML(OWNER_NAME)}
-                </p>
+                ${businessSettings.ownerName
+                    ? `<p>Owner: ${escapeHTML(businessSettings.ownerName)}</p>`
+                    : ""}
 
             </div>
 

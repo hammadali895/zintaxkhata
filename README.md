@@ -11,9 +11,9 @@ To keep a database somewhere else, set `KHATA_DB_PATH` before starting the serve
 
 ## Deploy to Vercel with Supabase
 
-1. Create a Supabase project and run `supabase/schema.sql` in its SQL Editor.
+1. Create a Supabase project and run `supabase/schema.sql` in its SQL Editor. For an existing installation, run `supabase/migrations/20261106_business_settings.sql` to enable saved receipt branding.
 2. Set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` as Vercel project environment variables. Find them in the Supabase project's API settings. Keep the service role key private; never commit it or put it in frontend code.
 3. Import this project from a private GitHub repository in Vercel and deploy. Vercel serves the static app and the `/api` serverless function.
-4. Open the Vercel HTTPS URL and create a username/password account.
+4. Open the Vercel HTTPS URL and create a username/password account. Use **Settings** to set the business name and optional logo shown on new transaction and sale receipts.
 
 Vercel's serverless function uses Supabase; it does not use the local SQLite database. The local `npm start` server continues to use SQLite.
