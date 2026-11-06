@@ -5,7 +5,6 @@ const path = require("node:path");
 const fs = require("node:fs");
 const { DatabaseSync } = require("node:sqlite");
 const { promisify } = require("node:util");
-const { validateSettingsRecords } = require("./settings-validation");
 
 const scrypt = promisify(crypto.scrypt);
 const PORT = Number(process.env.PORT || 3000);
@@ -156,6 +155,24 @@ function validateCredentials(body) {
         Buffer.byteLength(body.password, "utf8") < 8 ||
         Buffer.byteLength(body.password, "utf8") > 128) {
         throw apiError(400, "Password 8-128 bytes ka hona chahiye.");
+    }
+}
+
+function validateSettingsRecords(records) {
+    if (records.length !== 1) {
+        throw apiError(400, "Business settings must contain one profile.");
+    }
+
+    const settings = records[0];
+    if (!settings || typeof settings !== "object" || Array.isArray(settings) ||
+        typeof settings.businessName !== "string" ||
+        !settings.businessName.trim() || settings.businessName.trim().length > 80 ||
+        typeof settings.ownerName !== "string" || settings.ownerName.length > 80 ||
+        typeof settings.logoDataUrl !== "string" ||
+        settings.logoDataUrl.length > 450000 ||
+        (settings.logoDataUrl &&
+            !/^data:image\/jpeg;base64,[A-Za-z0-9+/]+={0,2}$/.test(settings.logoDataUrl))) {
+        throw apiError(400, "Business settings are invalid.");
     }
 }
 
